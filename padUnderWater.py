@@ -2,7 +2,7 @@ __author__ = 'moon'
 
 import numpy as np
 import cv2
-import cv
+
 
 # add this to create a new commit
 h= 7
