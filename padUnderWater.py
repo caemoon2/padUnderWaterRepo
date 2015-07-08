@@ -2,11 +2,7 @@ __author__ = 'moon'
 
 import numpy as np
 import cv2
-
-
-# add this to create a new commit
-h= 7
-
+import time
 
 ##------------------------
 ## simple
@@ -18,6 +14,9 @@ h= 7
 cap = cv2.VideoCapture('../Images/light1.MOV')
 result=open('mask.txt','w')
 
+frameNum= 0
+points= []
+start= time.time()
 while(1):
 
     # Take each frame
@@ -33,39 +32,34 @@ while(1):
 
     # Threshold the HSV image to get only blue colors
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
-#    kernel = np.ones((19,19),np.uint8)
-#    gradient = cv2.morphologyEx(mask, cv2.MORPH_GRADIENT, kernel)
-#    closing = cv2.morphologyEx(gradient, cv2.MORPH_CLOSE, kernel)
-#    kernel = np.ones((25,25),np.uint8)
-#    erosion = cv2.erode(closing,kernel,iterations = 1)
-    # Bitwise-AND mask and original image
-    #print mask[600:601,300:301]
+
+
     res = cv2.bitwise_and(frame,frame, mask= mask)
+
+    imgArray= np.array(res)
+    points.append(np.transpose(np.nonzero(imgArray)))
+
+
+    # result.write('\n')
+    # result.write('\n')
+    # result.write(mask)
+
+
     cv2.imshow('mask',mask)
- #list
 
-#    contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-   # Draw contours
-#    cv2.drawContours(frame, contours, -1, (0,255,0), 3)
+    end= time.time()
+    if end - start > 2:
+        break
 
-
-    #print contours[0]
-   # result.write('\n')
-    #result.write('\n')
-   # result.write(mask)
- ##   cv2.imshow('frame',frame)
-   # cv2.imshow('mask',mask)
-    #cv2.imshow('res',res)
+    frameNum= frameNum + 1
     k = cv2.waitKey(5) & 0xFF
     if k == 27:
         break
+
 ##how to find hsv values to track?
 result.close()
 
-green=np.uint8([[[0,0,128]]])
-hsv_green=cv2.cvtColor(green,cv2.COLOR_BGR2HSV)
+print points[0].shape
 
-
-print hsv_green
 
 cv2.destroyAllWindows()
