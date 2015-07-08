@@ -1,61 +1,68 @@
-__author__ = 'guille'
+__author__ = 'moon'
 
-
-import cv2
 import numpy as np
+import cv2
+import cv
 
-cap= cv2.VideoCapture('../Images/light1.MOV')
-# cap= cv2.VideoCapture(0)
 
-# Small change to git Hub
-g= 7
+##------------------------
+## simple
+#flags=[i for i in dir(cv2) if i.startswith('COLOR_')]
+#print flags
 
-while(True):
-    ret, frame= cap.read()
-    # frame= cv2.bilateralFilter(frame,5,75,75)
-    frame= frame[300:1000, 300:1600]
-    if ret:
-        gray= cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # gray= cv2.bilateralFilter(gray,9,75,75)  # filters taking into account color
-        # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        gray = cv2.medianBlur(gray,9)
-      # define range of blue color in HSV
-      #   lower = np.array([40,100,100])
-      #   upper = np.array([70,255,255])
+##----------------------
+## object tracking
+cap = cv2.VideoCapture('../Images/light1.MOV')
+result=open('mask.txt','w')
+
+while(1):
+
+    # Take each frame
+    _, frame = cap.read()
+    frame= frame[450:1000, 300:1600]
+   # Convert BGR to HSV
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # define range of blue color in HSV
+    lower_blue = np.array([80,50,50])
+    upper_blue = np.array([130,255,255])
+
 
     # Threshold the HSV image to get only blue colors
-    #     imgray = cv2.inRange(hsv, lower, upper)
-    #     ret2,thresh = cv2.threshold(gray,100,255,0)
-        gray = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,19,7)  # threshold
-        kernel= np.ones((21,21),np.uint8)
-        gray= cv2.morphologyEx(gray,cv2.MORPH_OPEN, kernel)
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+#    kernel = np.ones((19,19),np.uint8)
+#    gradient = cv2.morphologyEx(mask, cv2.MORPH_GRADIENT, kernel)
+#    closing = cv2.morphologyEx(gradient, cv2.MORPH_CLOSE, kernel)
+#    kernel = np.ones((25,25),np.uint8)
+#    erosion = cv2.erode(closing,kernel,iterations = 1)
+    # Bitwise-AND mask and original image
+    #print mask[600:601,300:301]
+    res = cv2.bitwise_and(frame,frame, mask= mask)
+    cv2.imshow('mask',mask)
+ #list
+
+#    contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+   # Draw contours
+#    cv2.drawContours(frame, contours, -1, (0,255,0), 3)
 
 
-
-
-        # cv2.imshow('image',gray)
-        contours, hierarchy = cv2.findContours(gray,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-
-        length= len(contours)
-        i= 0
-        while i < length:
-            arcLength= cv2.arcLength(contours[i],True)
-            if arcLength > 3000 or arcLength < 500:
-                del contours[i]
-                i= i-1
-                length= length - 1
-            i= i+1
-
-    # Draw contours
-        cv2.drawContours(frame, contours, -1, (0,255,0), 3)
-        cv2.imshow('contours', frame)
-
-
-    else:
-        print 'video not read properly'
-
-    if cv2.waitKey(20) & 0xFF == ord('q'):
+    #print contours[0]
+   # result.write('\n')
+    #result.write('\n')
+   # result.write(mask)
+ ##   cv2.imshow('frame',frame)
+   # cv2.imshow('mask',mask)
+    #cv2.imshow('res',res)
+    k = cv2.waitKey(5) & 0xFF
+    if k == 27:
         break
+##how to find hsv values to track?
+result.close()
 
-cap.release()
+green=np.uint8([[[0,0,128]]])
+hsv_green=cv2.cvtColor(green,cv2.COLOR_BGR2HSV)
+
+
+print hsv_green
+
 cv2.destroyAllWindows()
