@@ -3,7 +3,9 @@ __author__ = 'moon'
 import numpy as np
 import cv2
 import time
+import heapq
 from matplotlib import pyplot as plt
+import math
 
 ##------------------------
 ## simple
@@ -52,19 +54,19 @@ while(1):
         break
 
     frameNum= frameNum + 1
+
     k = cv2.waitKey(5) & 0xFF
     if k == 27:
         break
-#    cv2.imshow('overlap',overlap)
+    cv2.imshow('overlap',overlap)
 
 xs = np.arange(0,650,1)
 bottomxright=0
 topxright=0
 bottomxleft=500
 topxleft=1000
-delxright=0
-delxleft=0
-for i in range(frameNum/2,frameNum):
+
+for i in range(1,frameNum/4):
     x= points[i][:,0]
     y= points[i][:,1]
     xval1=np.max(y)
@@ -73,9 +75,12 @@ for i in range(frameNum/2,frameNum):
     z= np.polyfit(x,y,3)
 
     polynomial= np.poly1d(z)
-
     ys= polynomial(xs)
+    polyderi=np.polyder(polynomial)
 
+    xmaxs=heapq.nlargest(3,x)
+    xmins=heapq.nsmallest(3,x)
+#    print xmaxs[0]
     if bottomxright<xval1:
         bottomxright=xval1
         topxright=min(y)
@@ -85,54 +90,47 @@ for i in range(frameNum/2,frameNum):
         bottomxleft=xval2
         topxleft=max(y)
         left=i
-    if (i%2)==1:
-        plt.figure(0)
-        plt.plot(y,-x,'o')
-        plt.plot(ys,-xs,'r')
-        plt.ylim((-300,0))
-        plt.xlim(((-150,750)))
+    plt.figure(0)
+    plt.plot(y,-x,'o')
+    plt.plot(ys,-xs,'r')
+    plt.ylim((-300,0))
+    plt.xlim(((-150,750)))
 
-    delright=bottomxright-topxright
-    if topxright<bottomxright:
-        if delright>delxright:
-            delxleft=delright
-            ctright=topxright
-            cbright=bottomxright
-            curvright=i
-    print 'ctright',curvright
+    ytop=polynomial(np.average(xmins))
+    ybtm=polynomial(np.average(xmaxs))
+    slope1=0
+    slope2=0
+    for i in range(0,2):
+        slope11=math.degrees(math.atan(-1/polyderi(xmins[i])))
+        slope22=math.degrees(math.atan(-1/polyderi(xmaxs[i])))
+        slope1=slope1+slope11
+        slope2=slope2+slope22
+    slope1=slope1/3
+    slope2=slope2/3
+    slope3=math.degrees(math.atan(-(np.average(xmins)-np.average(xmaxs))/(ytop-ybtm)))
 
-    delleft=topxleft-bottomxleft
-    curvleft=0
-    if topxleft>bottomxleft:
-        if delleft>delxleft:
-            ctleft=topxleft
-            cbleft=bottomxleft
-            curvleft=i
-    print 'ctleft',curvleft
-print ctright,cbright,curvright,ctleft,cbleft,curvleft
-for i in range(frameNum/2,frameNum):
-    x= points[i][:,0]
-    y= points[i][:,1]
+    # xmin=min(x)
+    # xmax=max(x)
 
-    if i==right or i==left:
-        plt.figure(1)
-        plt.plot(y,-x,'k')
-        plt.ylim((-300,0))
-        plt.xlim(((-150,750)))
-        plt.text(topxright+20, -50, topxright, fontsize=12)
-        plt.text(bottomxright+20, -220, bottomxright, fontsize=12)
-        plt.text(topxleft-60, -20, topxleft, fontsize=12)
-        plt.text(bottomxleft-20, -180, bottomxleft, fontsize=12)
-    if i==curvleft or i==curvright:
-        plt.figure(2)
-        plt.plot(y,-x,'k')
-        plt.ylim((-300,0))
-        plt.xlim(((-150,750)))
-        plt.text(ctright+20, -40, ctright, fontsize=12)
-        plt.text(cbright+20, -220, cbright, fontsize=12)
-        plt.text(ctleft-20, -20, ctleft, fontsize=12)
-        plt.text(cbleft-20, -200, cbleft, fontsize=12)
-#plt.Figure.
+    # ytop=polynomial(xmin)
+    # ybtm=polynomial(xmax)
+    #
+    # slope1=math.degrees(math.atan(-1/polyderi(xmin)))
+    # slope2=math.degrees(math.atan(-1/polyderi(xmax)))
+    # slope3=math.degrees(math.atan(-(xmin-xmax)/(ytop-ybtm)))
+    difference=np.abs(slope1-slope2)
+    plt.figure(4)
+    plt.plot(i,difference,'o')
+    plt.figure(1)
+    plt.title('start slope')
+    plt.plot(i,slope1,'o')
+    plt.figure(3)
+    plt.title('average slope')
+    plt.plot(i,slope3,'o')
+    plt.figure(2)
+    plt.title('final slope')
+    plt.plot(i,slope2,'o')
+
 print topxright, bottomxright
 print topxleft,bottomxleft
 plt.show()
