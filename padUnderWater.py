@@ -100,9 +100,10 @@ for i in range(1,frameNum/4):
     ybtm=polynomial(np.average(xmaxs))
     slope1=0
     slope2=0
-    for i in range(0,2):
-        slope11=math.degrees(math.atan(-1/polyderi(xmins[i])))
-        slope22=math.degrees(math.atan(-1/polyderi(xmaxs[i])))
+    for k in range(0,3):
+        slope11=math.degrees(math.atan(-1/polyderi(xmins[k])))
+        # print 'slope11',slope11
+        slope22=math.degrees(math.atan(-1/polyderi(xmaxs[k])))
         slope1=slope1+slope11
         slope2=slope2+slope22
     slope1=slope1/3
@@ -115,11 +116,13 @@ for i in range(1,frameNum/4):
     # ytop=polynomial(xmin)
     # ybtm=polynomial(xmax)
     #
-    # slope1=math.degrees(math.atan(-1/polyderi(xmin)))
+    # slope111=math.degrees(math.atan(-1/polyderi(xmin)))
+    # print 'slope111',slope111
     # slope2=math.degrees(math.atan(-1/polyderi(xmax)))
     # slope3=math.degrees(math.atan(-(xmin-xmax)/(ytop-ybtm)))
     difference=np.abs(slope1-slope2)
     plt.figure(4)
+    plt.title('angle difference')
     plt.plot(i,difference,'o')
     plt.figure(1)
     plt.title('start slope')
