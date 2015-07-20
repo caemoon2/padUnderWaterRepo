@@ -66,7 +66,7 @@ topxright=0
 bottomxleft=500
 topxleft=1000
 
-for i in range(1,frameNum/4):
+for i in range(1,4*frameNum/4):
     x= points[i][:,0]
     y= points[i][:,1]
     xval1=np.max(y)
@@ -120,7 +120,12 @@ for i in range(1,frameNum/4):
     # print 'slope111',slope111
     # slope2=math.degrees(math.atan(-1/polyderi(xmax)))
     # slope3=math.degrees(math.atan(-(xmin-xmax)/(ytop-ybtm)))
-    difference=np.abs(slope1-slope2)
+    #difference=np.abs(slope1-slope2)
+    difference=slope1-slope2
+    if difference<-100 :
+        difference=180+difference
+    elif difference>100 :
+        difference=180-difference
     plt.figure(4)
     plt.title('angle difference')
     plt.plot(i,difference,'o')
